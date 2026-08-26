@@ -3,13 +3,14 @@
  * Bump CACHE whenever one of the files below changes, otherwise installed
  * copies keep serving the old version.
  */
-var CACHE = 'book-scan-splitter-v1';
+var CACHE = 'book-scan-splitter-v3';
 var ASSETS = [
   './',
   './index.html',
   './app.js',
   './style.css',
   './split-core.js',
+  './deskew-core.js',
   './manifest.json',
   './icons/icon.svg',
   './icons/icon-192.png',

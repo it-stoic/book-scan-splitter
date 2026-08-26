@@ -1,7 +1,7 @@
 {
   "name": "Book Scan Splitter",
   "short_name": "Book Splitter",
-  "description": "Split two-page book scans into single pages, without uploading anything.",
+  "description": "Split, straighten and trim book scans into single pages, without uploading anything.",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",

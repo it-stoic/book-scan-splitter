@@ -163,3 +163,82 @@ main {
 .install { margin-top: 18px; padding: 8px 18px; font-size: 14px; }
 
 [hidden] { display: none !important; }
+
+select {
+  font: inherit;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 5px 8px;
+  background: #fff;
+  color: inherit;
+}
+
+.row > label.sub, .row label.check {
+  min-width: 0;
+  font-weight: 400;
+  color: var(--muted);
+}
+.row label.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+  margin-left: auto;
+}
+.row label.check input { accent-color: var(--accent); }
+
+.pill {
+  min-width: 46px;
+  text-align: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #eef1f4;
+  font-variant-numeric: tabular-nums;
+}
+
+.result {
+  width: min(1000px, 92vw);
+  max-height: 88vh;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0;
+  background: var(--panel);
+  color: var(--ink);
+}
+.result::backdrop { background: rgba(12, 16, 20, .55); }
+
+.result-head {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+.result-head .link { margin-left: auto; }
+
+.result-grid {
+  display: grid;
+  align-items: end;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+  padding: 18px;
+}
+.result-grid figure {
+  margin: 0;
+  text-align: center;
+}
+.result-grid canvas {
+  width: 100%;
+  height: auto;
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .12);
+}
+.result-grid figcaption {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+}

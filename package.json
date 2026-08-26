@@ -1,10 +1,10 @@
 {
   "name": "book-scan-splitter",
   "version": "1.0.0",
-  "description": "Split two-page book scans into single pages, locally in the browser",
+  "description": "Split, straighten and trim book scans into single pages, locally in the browser",
   "main": "split-core.js",
   "scripts": {
-    "test": "node test/split.test.js",
+    "test": "node test/split.test.js && node test/deskew.test.js",
     "vendor": "node scripts/vendor.js"
   },
   "keywords": [],

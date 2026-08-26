@@ -1,12 +1,30 @@
 # Book Scan Splitter
 
-Split two-page book scans into single pages — in your browser, with nothing uploaded
-and no page limit.
+Everything a raw book scan needs before it is readable: cut apart, straightened, turned
+the right way up, trimmed. In your browser, with nothing uploaded and no page limit.
 
-Book scanners produce one image per *spread*: two pages side by side on a single sheet.
-Online tools that cut them apart usually stop at 50 or 100 pages and want your book
-uploaded to somebody's server first. Book Scan Splitter does the same job on your own
-machine, on a 900-page scan if you like.
+Book scanners produce one image per *spread*: two pages side by side on a single sheet,
+usually a little crooked, usually with a black border the lid left behind. Online tools
+that cut them apart stop at 50 or 100 pages and want your book on somebody's server
+first. Book Scan Splitter does the whole job on your own machine, on a 900-page scan if
+you like:
+
+- **Cut** every spread in two, left/right or top/bottom, in reading order, left to right
+  or right to left for Arabic, Hebrew and Japanese books.
+- **Straighten** each page, both halves of a spread measured separately, because a book
+  on a scanner rarely lies with both of its pages at the same angle.
+- **Rotate** the whole document, or only its odd or its even pages, for the scanners that
+  lay every second sheet down the other way round.
+- **Trim** the scanner's black borders, by hand or measured for you.
+- **Keep only part of the book** and drop the rest, image data and all.
+- **Look at the result** before you save anything.
+
+None of it re-renders your scan: the bytes of the image that go in are the bytes that
+come out.
+
+**The one thing missing is OCR.** What you get back is a picture of a page, cut and
+straightened, not searchable text. It is an ordinary PDF, so any OCR tool will take it
+from there.
 
 **→ [Open Book Scan Splitter](https://it-stoic.github.io/book-scan-splitter/)**
 
@@ -16,8 +34,9 @@ machine, on a 900-page scan if you like.
 
 1. Open the link above.
 2. Drop your PDF on the page.
-3. Position the cut line over the book's gutter.
-4. Press **Split and save PDF**.
+3. Position the cut line over the book's gutter, or press **Find edges and gutter**.
+4. Press **Preview result** to check the first pages.
+5. Press **Split and save PDF**.
 
 A 100-page scan comes back as a 200-page PDF, one book page per PDF page, in the right
 order. Nothing to install, nothing to configure.
@@ -45,15 +64,46 @@ You see the text block and gutter of the whole book at once, which makes it obvi
 where a cut line is safe for *all* pages rather than just the one you happen to be
 looking at. **Single page** steps through pages one at a time.
 
+**Cut** — **left / right** for the usual spread, **top / bottom** for sheets that hold
+one page above the other, which is what a landscape scan of a small book looks like.
+
+**Find edges and gutter** — measures the overlay: the bright rectangle inside the
+scanner's black border sets the four margins, and the gutter is found in the middle of
+it, either as the dark band of the binding's shadow or as the widest white gap between
+the two text blocks. It fills in the controls; look at the result before saving, because
+a scan with no clear gutter can fool it.
+
 **Cut line** — drag the green line, use the slider, type an exact percentage, or nudge it
-with <kbd>←</kbd>/<kbd>→</kbd> (hold <kbd>Shift</kbd> for larger steps).
+with the arrow keys (hold <kbd>Shift</kbd> for larger steps).
 
 **Outer margins** — drag the four dashed edges inwards to trim the black borders a
 scanner leaves around the sheet. The area being discarded is greyed out.
 
-**Keep whole** — page numbers that must not be cut, e.g. `1, 2, 45-47` for covers,
-plates or fold-outs. Those pages are still trimmed by the outer margins, just not split
-in half.
+**Rotate** — turns the whole document, 90° at a time. Nothing is re-rendered: the output
+pages carry a `/Rotate` entry, exactly what a scanner writes when it stores a rotated
+page. The cut line and margins turn with the view, so the cut stays on the same part of
+the paper. **Applied to odd or even pages only** fixes the scanners that lay every second
+sheet down the other way round.
+
+**Straighten crooked pages** — measures how far each output page is tilted and turns it
+back. The measurement is the classic projection profile: the page's ink is rotated
+through candidate angles and the sharpest horizontal profile wins, because straight text
+lines pile up into tall spikes while crooked ones smear across many rows. It runs *after*
+the cut, so the two halves of a spread are measured and corrected separately, which is
+the whole point: a book on a scanner rarely lies with both of its pages at the same
+angle. A page with nothing to measure, a full-page photo or a blank, is left alone rather
+than guessed at. Measuring means rendering every output page, so this is the one control
+that costs real time on a long book.
+
+**Pages** — process only part of the book. The pages outside the range are dropped
+together with their image data, so a chapter out of a 900-page scan is a small file.
+
+**Right-to-left book** — emits the right half of each spread first, for Arabic, Hebrew
+and Japanese books.
+
+**Preview result** — cuts the first few spreads only and shows the first 10 output pages
+as they will be saved. It runs the same code as the real split, so what you see is what
+you get, without waiting for the whole book.
 
 ## How it works
 
@@ -75,6 +125,12 @@ image. Consequences:
 raw box coordinates — scanners frequently store a rotated page rather than rotated
 pixels, and cutting on the wrong axis is the classic way to get this wrong.
 
+Straightening works the same way. `/Contents` may be an *array* of streams that a viewer
+concatenates, so each half gets `[q … cm, the original stream, Q]`: two tiny streams
+wrapped around one shared copy of the scan, rotating it about the centre of the crop box.
+The image data is still stored once and referenced twice even when the two halves are
+turned by different angles, and the correction costs a couple of hundred bytes per page.
+
 Rendering the preview is [pdf.js](https://github.com/mozilla/pdf.js); writing the output
 is [pdf-lib](https://github.com/Hopding/pdf-lib). Both are vendored into `vendor/`, so
 the page loads nothing from any third party.
@@ -90,6 +146,7 @@ index.html
 app.js
 style.css
 split-core.js
+deskew-core.js
 vendor/            pdf.min.js, pdf.worker.min.js, pdf-lib.min.js
 ```
 
@@ -103,8 +160,11 @@ and the offline cache only exist on the hosted version.
 - The file is held in memory, so extremely large scans (well past ~1 GB) can exhaust the
   browser tab.
 - Password-protected PDFs are not supported.
-- One cut line applies to the whole document. Pages that need a different one can be
-  listed under **Keep whole** and handled in a second pass.
+- One cut line applies to the whole document. A page that needs a different one has to
+  be handled in a second pass over its own page range.
+- Straightening turns a page about its centre, which empties the corners and can pull a
+  sliver of the facing page in at the gutter; the outer margins are there to trim both.
+  Only tilt is corrected, not the curvature a thick book shows near its binding.
 
 Tested in Chrome. Edge shares the same engine; Firefox and Safari use nothing exotic
 here but have not been verified. The install button is a Chrome/Edge feature — in other
@@ -114,12 +174,13 @@ browsers the page simply works as a page.
 
 ```sh
 pnpm install
-pnpm test      # geometry, all four /Rotate angles, margins, page lists, output size
+pnpm test      # geometry, all four /Rotate angles, both cut directions, ranges,
+               # skew measured back off known tilts, output size
 pnpm vendor    # refresh vendor/ from node_modules
 ```
 
-`split-core.js` holds the splitting logic and is shared verbatim by the page and the
-test suite; `app.js` is only the interface. There is no build step — the page loads
+`split-core.js` holds the splitting logic and `deskew-core.js` the straightening; both
+are shared verbatim by the page and the test suite, and `app.js` is only the interface. There is no build step — the page loads
 plain scripts, which is also why the vendored libraries are the UMD builds rather than
 ES modules (`file://` pages cannot load ES modules).
 

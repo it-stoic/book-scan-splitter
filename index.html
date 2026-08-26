@@ -14,7 +14,7 @@
 
 <header>
   <h1>Book Scan Splitter</h1>
-  <p>Split two-page book scans into single pages. Everything happens on this computer: nothing is uploaded, and there is no page limit.</p>
+  <p>Split, straighten and trim two-page book scans into single pages. Everything happens on this computer: nothing is uploaded, and there is no page limit.</p>
   <button type="button" id="install" class="primary install" hidden>Install as an app</button>
 </header>
 
@@ -45,13 +45,23 @@
     <span class="muted" id="renderInfo"></span>
   </div>
 
-  <p class="hint">Drag the middle line to set where the cut goes, and the edge lines to trim the scanner borders.</p>
+  <p class="hint" id="hint">Drag the middle line to set where the cut goes, and the edge lines to trim the scanner borders.</p>
 
   <div class="stage">
     <canvas id="preview"></canvas>
   </div>
 
   <div class="controls">
+    <div class="row">
+      <label>Cut</label>
+      <div class="tabs" id="directionTabs">
+        <button type="button" data-direction="vertical" class="on">Left / right</button>
+        <button type="button" data-direction="horizontal">Top / bottom</button>
+      </div>
+      <button type="button" id="detect">Find edges and gutter</button>
+      <span class="muted" id="detectInfo"></span>
+    </div>
+
     <div class="row">
       <label for="splitPct">Cut line</label>
       <input type="range" id="splitRange" min="5" max="95" step="0.1" value="50">
@@ -69,20 +79,47 @@
     </div>
 
     <div class="row">
-      <label for="skip">Keep whole</label>
-      <input type="text" id="skip" placeholder="pages that must not be cut, e.g. 1, 2, 45-47">
+      <label>Rotate</label>
+      <button type="button" id="rotLeft" title="Rotate 90° counter-clockwise">↺ 90°</button>
+      <button type="button" id="rotRight" title="Rotate 90° clockwise">↻ 90°</button>
+      <span class="pill" id="rotInfo">0°</span>
+      <label for="rotScope" class="sub">applied to</label>
+      <select id="rotScope">
+        <option value="all">all pages</option>
+        <option value="odd">odd pages only</option>
+        <option value="even">even pages only</option>
+      </select>
+      <label class="check"><input type="checkbox" id="deskew"> Straighten crooked pages</label>
+    </div>
+
+    <div class="row">
+      <label for="rangeFrom">Pages</label>
+      <span><span class="tag">from</span><input type="number" id="rangeFrom" min="1" step="1" placeholder="1"></span>
+      <span><span class="tag">to</span><input type="number" id="rangeTo" min="1" step="1" placeholder="last"></span>
+      <label class="check"><input type="checkbox" id="reverse"> <span id="reverseLabel">Right-to-left book (right half first)</span></label>
     </div>
 
     <div class="row actions">
       <button type="button" id="go" class="primary">Split and save PDF</button>
+      <button type="button" id="check">Preview result</button>
       <span id="status" class="muted"></span>
     </div>
   </div>
 </main>
 
+<dialog id="resultDialog" class="result">
+  <div class="result-head">
+    <strong>First pages of the output</strong>
+    <span class="muted" id="resultInfo"></span>
+    <button type="button" id="resultClose" class="link">close</button>
+  </div>
+  <div class="result-grid" id="resultGrid"></div>
+</dialog>
+
 <script src="vendor/pdf.min.js"></script>
 <script src="vendor/pdf-lib.min.js"></script>
 <script src="split-core.js"></script>
+<script src="deskew-core.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

@@ -1,8 +1,8 @@
 /*
- * Splits every page of a PDF into a left and a right half by rewriting page
- * boxes instead of re-rendering: each half is a page dictionary that shares the
- * original /Contents and /Resources, so image data is never duplicated and the
- * scan keeps its exact quality.
+ * Splits every page of a PDF into two halves by rewriting page boxes instead of
+ * re-rendering: each half is a page dictionary that shares the original
+ * /Contents and /Resources, so image data is never duplicated and the scan keeps
+ * its exact quality.
  */
 (function (root, factory) {
   var api = factory();
@@ -22,10 +22,17 @@
     return Math.round(a / 90) * 90 % 360;
   }
 
+  function pageRotation(leaf) {
+    var L = lib();
+    var value = leaf.getInheritableAttribute(L.PDFName.of('Rotate')); // inheritable
+    var number = value === undefined ? undefined : leaf.context.lookupMaybe(value, L.PDFNumber);
+    return normalizeRotation(number ? number.asNumber() : 0);
+  }
+
   /*
    * Maps a rectangle expressed in fractions of the *rendered* page (x from the
    * visually left edge, y from the visually top edge) onto PDF box coordinates,
-   * undoing the page's /Rotate.
+   * undoing the rotation the viewer will apply.
    */
   function visualRectToBox(box, rotation, r) {
     var u0, u1, v0, v1; // u: box left->right, v: box bottom->top
@@ -46,6 +53,21 @@
     };
   }
 
+  function halfRects(direction, split, m) {
+    var left = m.left || 0, right = 1 - (m.right || 0);
+    var top = m.top || 0, bottom = 1 - (m.bottom || 0);
+    if (direction === 'horizontal') {
+      return [
+        { x0: left, x1: right, y0: top, y1: split },
+        { x0: left, x1: right, y0: split, y1: bottom },
+      ];
+    }
+    return [
+      { x0: left, x1: split, y0: top, y1: bottom },
+      { x0: split, x1: right, y0: top, y1: bottom },
+    ];
+  }
+
   function clonePageLeaf(doc, srcPage) {
     var L = lib();
     var leaf = srcPage.node;
@@ -58,77 +80,86 @@
     return { leaf: newLeaf, ref: doc.context.register(newLeaf) };
   }
 
-  function applyBox(context, leaf, rect) {
+  function applyBox(context, leaf, rect, rotation) {
     var L = lib();
     var value = context.obj([rect.llx, rect.lly, rect.urx, rect.ury]);
     leaf.set(L.PDFName.of('MediaBox'), value);
     leaf.set(L.PDFName.of('CropBox'), context.obj([rect.llx, rect.lly, rect.urx, rect.ury]));
+    leaf.set(L.PDFName.of('Rotate'), context.obj(rotation));
     ['BleedBox', 'TrimBox', 'ArtBox'].forEach(function (name) {
       leaf.delete(L.PDFName.of(name));
     });
   }
 
-  function parsePageList(text, pageCount) {
+  function pagesInRange(range, pageCount) {
+    var from = range && range.from ? Math.max(1, Math.round(range.from)) : 1;
+    var to = range && range.to ? Math.min(pageCount, Math.round(range.to)) : pageCount;
     var out = [];
-    if (!text) return out;
-    text.split(/[,;\s]+/).forEach(function (part) {
-      if (!part) return;
-      var range = part.split('-');
-      var from = parseInt(range[0], 10);
-      var to = range.length > 1 ? parseInt(range[1], 10) : from;
-      if (isNaN(from) || isNaN(to)) return;
-      if (to < from) { var t = from; from = to; to = t; }
-      for (var p = from; p <= to; p++) {
-        if (p >= 1 && p <= pageCount && out.indexOf(p - 1) === -1) out.push(p - 1);
-      }
-    });
+    for (var p = from; p <= to; p++) out.push(p - 1);
+    return out;
+  }
+
+  async function keepOnly(doc, keep) {
+    var L = lib();
+    var out = await L.PDFDocument.create(); // unlinking alone would still write them out
+    var copied = await out.copyPages(doc, keep);
+    copied.forEach(function (page) { out.addPage(page); });
     return out;
   }
 
   /*
-   * options: { split, margins:{left,right,top,bottom}, skip:[0-based], onProgress }
-   * All geometry is given as fractions of the rendered page.
+   * options: {
+   *   direction: 'vertical' | 'horizontal',
+   *   split, margins: { left, right, top, bottom },
+   *   rotate: 0|90|180|270, rotateScope: 'all'|'odd'|'even',
+   *   reverse: bool, range: { from, to } (1-based, inclusive), onProgress
+   * }
+   * All geometry is given as fractions of the rendered page, after `rotate`.
    */
   async function splitPdfBytes(bytes, options) {
     var L = lib();
     var opts = options || {};
+    var direction = opts.direction === 'horizontal' ? 'horizontal' : 'vertical';
     var split = opts.split == null ? 0.5 : opts.split;
-    var m = opts.margins || {};
-    var mL = m.left || 0, mR = m.right || 0, mT = m.top || 0, mB = m.bottom || 0;
-    var skip = opts.skip || [];
+    var margins = opts.margins || {};
+    var extraRotation = normalizeRotation(opts.rotate || 0);
+    var rotateScope = opts.rotateScope || 'all';
+    var reverse = !!opts.reverse;
     var onProgress = opts.onProgress;
 
     var doc = await L.PDFDocument.load(bytes, { ignoreEncryption: true });
+    var inputCount = doc.getPageCount();
+    var keep = pagesInRange(opts.range, inputCount);
+    if (!keep.length) throw new Error('The page range selects no pages.');
+    if (keep.length !== inputCount) doc = await keepOnly(doc, keep);
+
     var context = doc.context;
     var pages = doc.getPages();
-
     var pagesRef = doc.catalog.get(L.PDFName.of('Pages'));
     if (!(pagesRef instanceof L.PDFRef)) {
       throw new Error('Unexpected PDF structure: /Pages is not an indirect reference.');
     }
 
+    var rects = halfRects(direction, split, margins);
     var order = [];
+
     for (var i = 0; i < pages.length; i++) {
       var page = pages[i];
       var box = page.getCropBox();
-      var rotation = normalizeRotation(page.getRotation().angle);
-      var top = mT, bottom = 1 - mB;
+      var inputNumber = keep[i] + 1; // odd/even follows the numbering the user sees
+      var rotateThisPage = rotateScope === 'all'
+        || (rotateScope === 'odd' && inputNumber % 2 === 1)
+        || (rotateScope === 'even' && inputNumber % 2 === 0);
+      var rotation = normalizeRotation(
+        pageRotation(page.node) + (rotateThisPage ? extraRotation : 0)
+      );
 
-      if (skip.indexOf(i) !== -1) {
-        applyBox(context, page.node, visualRectToBox(box, rotation, {
-          x0: mL, x1: 1 - mR, y0: top, y1: bottom,
-        }));
-        order.push(page.ref);
-      } else {
-        var clone = clonePageLeaf(doc, page);
-        applyBox(context, page.node, visualRectToBox(box, rotation, {
-          x0: mL, x1: split, y0: top, y1: bottom,
-        }));
-        applyBox(context, clone.leaf, visualRectToBox(box, rotation, {
-          x0: split, x1: 1 - mR, y0: top, y1: bottom,
-        }));
-        order.push(page.ref, clone.ref);
-      }
+      var clone = clonePageLeaf(doc, page);
+      applyBox(context, page.node, visualRectToBox(box, rotation, rects[0]), rotation);
+      applyBox(context, clone.leaf, visualRectToBox(box, rotation, rects[1]), rotation);
+      if (reverse) order.push(clone.ref, page.ref);
+      else order.push(page.ref, clone.ref);
+
       if (onProgress) onProgress(i + 1, pages.length);
     }
 
@@ -146,7 +177,8 @@
 
   return {
     splitPdfBytes: splitPdfBytes,
-    parsePageList: parsePageList,
+    pagesInRange: pagesInRange,
+    halfRects: halfRects,
     visualRectToBox: visualRectToBox,
     normalizeRotation: normalizeRotation,
   };
