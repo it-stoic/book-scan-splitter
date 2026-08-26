@@ -622,9 +622,12 @@
       if (i % 5 === 0) await new Promise(function (r) { setTimeout(r, 0); });
     }
     pdf.destroy();
+    var largest = angles.reduce(function (m, a) { return Math.max(m, Math.abs(a)); }, 0);
     return {
       bytes: await DeskewCore.deskewPdfBytes(bytes, angles),
-      note: ' Straightened ' + turned + ' of ' + angles.length + ' pages.',
+      note: turned
+        ? ' Straightened ' + turned + ' of ' + angles.length + ' pages, up to ' + largest.toFixed(1) + '°.'
+        : ' No page looked crooked enough to straighten.',
     };
   }
 
@@ -639,9 +642,15 @@
       var range = effectiveRange();
       var bytes = new Uint8Array(await state.file.arrayBuffer());
       var out = await SplitCore.splitPdfBytes(bytes, splitOptions(range));
+      var note = '';
+      if (state.deskew) {
+        var straightened = await straighten(out);
+        out = straightened.bytes;
+        note = straightened.note;
+      }
       var count = range.to - range.from + 1;
       save(out, state.file.name.replace(/\.pdf$/i, '') + '-split.pdf');
-      status('Done: ' + count + ' → ' + count * 2 + ' pages.');
+      status('Done: ' + count + ' → ' + count * 2 + ' pages.' + note);
     } catch (err) {
       status('Error: ' + err.message);
     }
