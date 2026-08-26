@@ -85,7 +85,7 @@ page. The cut line and margins turn with the view, so the cut stays on the same 
 the paper. **Applied to odd or even pages only** fixes the scanners that lay every second
 sheet down the other way round.
 
-**Straighten crooked pages** — measures how far each output page is tilted and turns it
+**Straighten crooked pages (deskew)** — measures how far each output page is tilted and turns it
 back. The measurement is the classic projection profile: the page's ink is rotated
 through candidate angles and the sharpest horizontal profile wins, because straight text
 lines pile up into tall spikes while crooked ones smear across many rows. It runs *after*

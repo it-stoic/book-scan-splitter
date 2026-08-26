@@ -3,7 +3,7 @@
  * Bump CACHE whenever one of the files below changes, otherwise installed
  * copies keep serving the old version.
  */
-var CACHE = 'book-scan-splitter-v4';
+var CACHE = 'book-scan-splitter-v5';
 var ASSETS = [
   './',
   './index.html',
