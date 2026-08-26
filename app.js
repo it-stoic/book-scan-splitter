@@ -405,16 +405,22 @@
     return [lo, hi + 1];
   }
 
+  function median(values) {
+    var sorted = values.slice().sort(function (x, y) { return x - y; });
+    return sorted[sorted.length >> 1];
+  }
+
   function findGutter(ink, lo, hi, count) {
-    // a dark band is the shadow of the binding; without one, take the widest gap
     var span = hi - lo;
     var a = Math.round(lo + span * 0.3), b = Math.round(lo + span * 0.7);
-    var peak = 0, peakAt = (a + b) / 2, i;
+    var peak = 0, peakAt = (a + b) / 2, band = [], i;
     for (i = a; i < b; i++) {
       var f = ink[i] / count;
+      band.push(f);
       if (f > peak) { peak = f; peakAt = i; }
     }
-    if (peak > 0.5) return peakAt;
+    // the binding casts a narrow dark band; a page that is dark all over is text
+    if (peak > 0.5 && peak > median(band) * 2) return peakAt;
 
     var bestStart = -1, bestLen = 0, runStart = -1;
     for (i = a; i < b; i++) {
