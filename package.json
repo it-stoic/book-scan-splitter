@@ -1,0 +1,24 @@
+{
+  "name": "book-scan-splitter",
+  "version": "1.0.0",
+  "description": "Split two-page book scans into single pages, locally in the browser",
+  "main": "split-core.js",
+  "scripts": {
+    "test": "node test/split.test.js",
+    "vendor": "node scripts/vendor.js"
+  },
+  "keywords": [],
+  "author": "Filip Šimunjak",
+  "license": "MIT",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.9.0",
+      "onFail": "download"
+    }
+  },
+  "dependencies": {
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "3.11.174"
+  }
+}

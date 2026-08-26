@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book Scan Splitter</title>
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f9d78">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+</head>
+<body>
+
+<header>
+  <h1>Book Scan Splitter</h1>
+  <p>Split two-page book scans into single pages. Everything happens on this computer: nothing is uploaded, and there is no page limit.</p>
+  <button type="button" id="install" class="primary install" hidden>Install as an app</button>
+</header>
+
+<section id="drop" class="drop">
+  <input type="file" id="file" accept="application/pdf,.pdf" hidden>
+  <p><strong>Drop a PDF here</strong></p>
+  <p class="muted">or <button type="button" id="pick" class="link">choose a file</button></p>
+</section>
+
+<main id="workspace" hidden>
+  <div class="filebar">
+    <span id="fileName" class="name"></span>
+    <span id="fileMeta" class="muted"></span>
+    <button type="button" id="change" class="link">change file</button>
+  </div>
+
+  <div class="viewbar">
+    <div class="tabs" id="modeTabs">
+      <button type="button" data-mode="overlay" class="on">All pages overlaid</button>
+      <button type="button" data-mode="single">Single page</button>
+    </div>
+    <div class="pager" id="pager" hidden>
+      <button type="button" id="prev" title="Previous page">‹</button>
+      <input type="number" id="pageNum" min="1" value="1">
+      <span class="muted" id="pageTotal"></span>
+      <button type="button" id="next" title="Next page">›</button>
+    </div>
+    <span class="muted" id="renderInfo"></span>
+  </div>
+
+  <p class="hint">Drag the middle line to set where the cut goes, and the edge lines to trim the scanner borders.</p>
+
+  <div class="stage">
+    <canvas id="preview"></canvas>
+  </div>
+
+  <div class="controls">
+    <div class="row">
+      <label for="splitPct">Cut line</label>
+      <input type="range" id="splitRange" min="5" max="95" step="0.1" value="50">
+      <input type="number" id="splitPct" min="0" max="100" step="0.1" value="50">
+      <span class="unit">%</span>
+    </div>
+
+    <div class="row margins">
+      <label>Outer margins</label>
+      <span><span class="tag">left</span><input type="number" class="m" id="mLeft" min="0" max="45" step="0.1" value="0"><span class="unit">%</span></span>
+      <span><span class="tag">right</span><input type="number" class="m" id="mRight" min="0" max="45" step="0.1" value="0"><span class="unit">%</span></span>
+      <span><span class="tag">top</span><input type="number" class="m" id="mTop" min="0" max="45" step="0.1" value="0"><span class="unit">%</span></span>
+      <span><span class="tag">bottom</span><input type="number" class="m" id="mBottom" min="0" max="45" step="0.1" value="0"><span class="unit">%</span></span>
+      <button type="button" id="resetGeom" class="link">reset</button>
+    </div>
+
+    <div class="row">
+      <label for="skip">Keep whole</label>
+      <input type="text" id="skip" placeholder="pages that must not be cut, e.g. 1, 2, 45-47">
+    </div>
+
+    <div class="row actions">
+      <button type="button" id="go" class="primary">Split and save PDF</button>
+      <span id="status" class="muted"></span>
+    </div>
+  </div>
+</main>
+
+<script src="vendor/pdf.min.js"></script>
+<script src="vendor/pdf-lib.min.js"></script>
+<script src="split-core.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

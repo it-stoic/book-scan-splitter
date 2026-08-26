@@ -1,0 +1,22 @@
+{
+  "name": "Book Scan Splitter",
+  "short_name": "Book Splitter",
+  "description": "Split two-page book scans into single pages, without uploading anything.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#f4f5f7",
+  "theme_color": "#0f9d78",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
