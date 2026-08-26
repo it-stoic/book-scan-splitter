@@ -56,6 +56,22 @@ from your disk, cut, and saved back to your disk. It never travels to a server â
 is no server. You can check this yourself: disconnect from the internet, then split a
 book. It still works.
 
+## Before and after
+
+A spread the way the scanner handed it over: two pages on one sheet, a black edge down
+the side, and the left page sitting noticeably more crooked than the right one.
+
+![A scanned spread, uncut, with the left page crooked](docs/example-spread.png)
+
+The same sheet after a single pass. It was cut at the gutter and each half was measured
+and straightened on its own, which is why the left page could be brought level without
+tipping the right one over with it.
+
+<p>
+  <img src="docs/example-left-page.png" width="49%" alt="The left page, cut out and straightened">
+  <img src="docs/example-right-page.png" width="49%" alt="The right page, cut out and straightened">
+</p>
+
 ## Controls
 
 **All pages overlaid** â€” up to 16 pages sampled across the book are drawn on top of each
