@@ -123,8 +123,10 @@ test suite; `app.js` is only the interface. There is no build step — the page 
 plain scripts, which is also why the vendored libraries are the UMD builds rather than
 ES modules (`file://` pages cannot load ES modules).
 
-**Deployment** is GitHub Pages: repository *Settings → Pages → Source: deploy from
-branch → main / root*. Everything needed is committed.
+**Deployment** is GitHub Pages, driven by [.github/workflows/pages.yml](.github/workflows/pages.yml):
+every push to `main` uploads the repository as it stands and deploys it. The workflow
+declares `pages: write` and `id-token: write` explicitly, so it does not depend on the
+repository default for `GITHUB_TOKEN`.
 
 **After changing any app file, bump `CACHE` in `sw.js`** (`book-scan-splitter-v1` →
 `book-scan-splitter-v2`). Installed copies serve the cached version until the cache name
