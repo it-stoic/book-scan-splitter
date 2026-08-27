@@ -211,7 +211,16 @@ changes, so skipping this means users keep running the old build.
 
 ## License
 
-MIT, see [LICENSE](LICENSE).
+GNU Affero General Public License v3.0 or later, see [LICENSE](LICENSE).
+
+Use it, study it, change it, pass it on. What the licence asks in return is that the
+source travels with the software: if you distribute a modified version, or **host one for
+other people to use**, those people have to be offered its complete source under these
+same terms. That last part is section 13, and it is the reason for choosing AGPL over GPL
+for something that runs on a web page.
+
+This covers the code in this repository. It does not cover the libraries in `vendor/`,
+which keep their own licences, listed below.
 
 ## Credits
 

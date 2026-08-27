@@ -9,7 +9,7 @@
   },
   "keywords": [],
   "author": "Filip Šimunjak",
-  "license": "MIT",
+  "license": "AGPL-3.0-or-later",
   "devEngines": {
     "packageManager": {
       "name": "pnpm",

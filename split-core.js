@@ -1,4 +1,10 @@
 /*
+ * Book Scan Splitter, https://github.com/it-stoic/book-scan-splitter
+ * Copyright (C) 2026 Filip Simunjak
+ * Licensed under the GNU Affero General Public License v3 or later; see LICENSE.
+ * If you host a modified version, its users must be offered its source.
+ */
+/*
  * Splits every page of a PDF into two halves by rewriting page boxes instead of
  * re-rendering: each half is a page dictionary that shares the original
  * /Contents and /Resources, so image data is never duplicated and the scan keeps
