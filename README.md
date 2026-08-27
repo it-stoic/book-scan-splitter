@@ -49,6 +49,14 @@ without an address bar, and **works with no internet connection at all** — the
 app is stored on your machine on first use. Uninstalling is a normal app uninstall. No
 administrator rights are needed, so it also works on locked-down office machines.
 
+Firefox does not show that button and never will: offering an install is something only
+the browser may do there, never the page. Firefox has its own route instead. On Windows,
+since Firefox 142, the address bar carries an **Add tab to taskbar** button that pins the
+page as a web app; on Linux the same feature exists but has to be switched on in
+`about:config`, and on macOS it does not exist. Either way the offline part already
+works in Firefox, because the page caches itself the same way there. Only the desktop
+icon needs the extra step.
+
 ### Is my book uploaded anywhere?
 
 No. The page is downloaded to your browser and does the work there; your PDF is opened
@@ -183,8 +191,9 @@ and the offline cache only exist on the hosted version.
   Only tilt is corrected, not the curvature a thick book shows near its binding.
 
 Tested in Chrome. Edge shares the same engine; Firefox and Safari use nothing exotic
-here but have not been verified. The install button is a Chrome/Edge feature — in other
-browsers the page simply works as a page.
+here but have not been verified. The **Install as an app** button is Chromium-only, since
+it rests on an event no other engine implements; see [Keep it as an
+app](#keep-it-as-an-app) for what Firefox offers in its place.
 
 ## Development
 
