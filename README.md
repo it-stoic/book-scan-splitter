@@ -26,6 +26,12 @@ come out.
 straightened, not searchable text. It is an ordinary PDF, so any OCR tool will take it
 from there.
 
+**Grey paper and specks are a separate job**, because taking them out means drawing
+the pages again, which this tool goes out of its way never to do.
+[Book Scan Cleaner](https://github.com/it-stoic/book-scan-cleaner) does that part:
+whiten the paper, lose the gutter's shadow, brush the scanner's dust out of the
+margins. Cut first, clean after.
+
 **→ [Open Book Scan Splitter](https://it-stoic.github.io/book-scan-splitter/)**
 
 ![Book Scan Splitter with a scanned book loaded](docs/screenshot.png)

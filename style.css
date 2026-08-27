@@ -26,6 +26,8 @@ header {
 }
 header h1 { margin: 0 0 6px; font-size: 27px; }
 header p { margin: 0; color: var(--muted); }
+header .cross { margin-top: 8px; font-size: 14px; }
+header a { color: var(--accent-dark); }
 
 .muted { color: var(--muted); }
 
@@ -191,6 +193,8 @@ label.check input { accent-color: var(--accent); }
   flex-wrap: wrap;
   margin-top: 14px;
 }
+
+.actions a { color: var(--accent-dark); font-size: 14px; }
 
 .install { margin-top: 18px; padding: 8px 18px; font-size: 14px; }
 

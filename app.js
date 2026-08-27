@@ -28,6 +28,7 @@
     rotScope: el('rotScope'), rangeFrom: el('rangeFrom'), rangeTo: el('rangeTo'),
     reverse: el('reverse'), reverseLabel: el('reverseLabel'), deskew: el('deskew'),
     go: el('go'), check: el('check'), status: el('status'), install: el('install'),
+    cleanNext: el('cleanNext'),
     resultDialog: el('resultDialog'), resultGrid: el('resultGrid'),
     resultInfo: el('resultInfo'), resultClose: el('resultClose'),
     margin: {
@@ -98,6 +99,7 @@
     ui.drop.hidden = true;
     ui.workspace.hidden = false;
     status('');
+    ui.cleanNext.hidden = true;
     ui.detectInfo.textContent = '';
     file.arrayBuffer().then(function (buf) {
       // pdf.js may detach the buffer it is given, so hand it a private copy
@@ -657,6 +659,7 @@
       var count = range.to - range.from + 1;
       save(out, state.file.name.replace(/\.pdf$/i, '') + '-split.pdf');
       status('Done: ' + count + ' → ' + count * 2 + ' pages.' + note);
+      ui.cleanNext.hidden = false;
     } catch (err) {
       status('Error: ' + err.message);
     }
