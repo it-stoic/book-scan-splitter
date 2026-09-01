@@ -273,3 +273,14 @@ footer {
   color: var(--muted);
 }
 footer a { color: var(--accent-dark); }
+
+@media (max-width: 700px) {
+  body { padding: 0 10px 40px; }
+  header { padding: 22px 0 16px; }
+  header h1 { font-size: 22px; }
+  header p { font-size: 14px; }
+  .stage { padding: 8px; }
+  .controls { padding: 10px; }
+  .groups { grid-template-columns: 1fr; }
+  .field input[type="range"] { min-width: 120px; }
+}

@@ -7,7 +7,8 @@
 (function () {
   'use strict';
 
-  var PREVIEW_WIDTH = 880;   // CSS pixels of the preview canvas
+  var PREVIEW_WIDTH = 880;   // CSS pixels the preview is composited at
+  var VIEW_MIN_HEIGHT = 260; // shortest the preview is ever shown
   var MAX_SAMPLES = 16;      // pages composited in overlay mode
   var GRAB = 11;             // hit radius in screen pixels
   var RESULT_PAGES = 10;     // output pages shown by "Preview result"
@@ -50,6 +51,7 @@
     token: 0,
     base: null,
     view: { w: PREVIEW_WIDTH, h: 600, dpr: 1 },
+    aspect: 1.4,
     drag: null,
   };
 
@@ -186,16 +188,15 @@
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var w = PREVIEW_WIDTH;
     var h = Math.round(w * vp.height / vp.width);
-    state.view = { w: w, h: h, dpr: dpr };
+    state.aspect = vp.height / vp.width;
+    state.view.dpr = dpr;
+    fitView();
 
-    ui.preview.width = Math.round(w * dpr);
-    ui.preview.height = Math.round(h * dpr);
-    ui.preview.style.width = w + 'px';
-    ui.preview.style.height = h + 'px';
-
+    // the composite is kept at full width however small the view of it is, so
+    // the edge detection reads the same pixels on a phone as on a desktop
     var base = document.createElement('canvas');
-    base.width = ui.preview.width;
-    base.height = ui.preview.height;
+    base.width = Math.round(w * dpr);
+    base.height = Math.round(h * dpr);
     var bctx = base.getContext('2d');
     bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     bctx.fillStyle = '#fff';
@@ -232,6 +233,39 @@
     var b = bounds();
     return isVertical() ? { lo: b.left, hi: b.right } : { lo: b.top, hi: b.bottom };
   }
+
+  /*
+   * The page is shown at whatever is left of the screen below the header, rather
+   * than at full width: a tall spread drawn 880 pixels across runs several
+   * screens down on a phone, and puts the controls out of sight on a desktop.
+   */
+  function fitView() {
+    var stage = ui.preview.parentElement;
+    var pad = parseFloat(getComputedStyle(stage).paddingLeft) || 0;
+    var room = Math.max(200, stage.clientWidth - pad * 2);
+    var v = state.view;
+    var w = Math.min(PREVIEW_WIDTH, room);
+    var h = w * state.aspect;
+    var free = window.innerHeight - stage.getBoundingClientRect().top - window.scrollY;
+    var roof = Math.max(VIEW_MIN_HEIGHT, free - pad * 2 - 24);
+    if (h > roof) { h = roof; w = h / state.aspect; }
+    v.w = Math.round(w);
+    v.h = Math.round(h);
+    ui.preview.width = Math.round(v.w * v.dpr);
+    ui.preview.height = Math.round(v.h * v.dpr);
+    ui.preview.style.width = v.w + 'px';
+    ui.preview.style.height = v.h + 'px';
+  }
+
+  var fitTimer = null;
+  window.addEventListener('resize', function () {
+    clearTimeout(fitTimer);
+    fitTimer = setTimeout(function () {
+      if (!state.base) return;
+      fitView();
+      drawStage();
+    }, 120);
+  });
 
   function drawStage() {
     var v = state.view;
