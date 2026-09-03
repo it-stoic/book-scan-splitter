@@ -28,6 +28,7 @@
     rotLeft: el('rotLeft'), rotRight: el('rotRight'), rotInfo: el('rotInfo'),
     rotScope: el('rotScope'), rangeFrom: el('rangeFrom'), rangeTo: el('rangeTo'),
     reverse: el('reverse'), reverseLabel: el('reverseLabel'), deskew: el('deskew'),
+    deskewInfo: el('deskewInfo'),
     go: el('go'), check: el('check'), status: el('status'), install: el('install'),
     cleanNext: el('cleanNext'),
     resultDialog: el('resultDialog'), resultGrid: el('resultGrid'),
@@ -602,7 +603,10 @@
     input.addEventListener('change', function () { renderPreview(); });
   });
   ui.reverse.addEventListener('change', function () { state.reverse = ui.reverse.checked; });
-  ui.deskew.addEventListener('change', function () { state.deskew = ui.deskew.checked; });
+  ui.deskew.addEventListener('change', function () {
+    state.deskew = ui.deskew.checked;
+    ui.deskewInfo.hidden = !state.deskew;
+  });
 
   Array.prototype.forEach.call(ui.modeTabs.children, function (button) {
     button.addEventListener('click', function () {
